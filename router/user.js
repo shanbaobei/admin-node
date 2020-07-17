@@ -4,7 +4,13 @@ const Result = require('../models/Result')
 
 router.post('/login', function(req, res) {
     console.log(req.body)
-    new Result().success(res)
+    const {username,password} = req.body
+    if ( username === 'admin' && password === '11111'){
+        new Result( '登录成功').success(res)
+    }else{
+        new Result( '登录失败 ').fail(res)
+    }
+    
 })
 router.get('/info',function(req,res,next){
     res.json('user info...')
