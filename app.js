@@ -1,8 +1,13 @@
 const express = require('express')   //把express引用进来
 const router = require('./router')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+
 const app = express()    //创建一个app，这个app就是一个express应用
-const fs = require('fs')
-const http = require('http')
+
+app.use(cors())
+app.use(bodyParser.urlencoded({extended:true}))
+app.use(bodyParser.json())
 
 
 app.use('/',router)
