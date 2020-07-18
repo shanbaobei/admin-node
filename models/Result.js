@@ -2,7 +2,7 @@ const {
     CODE_ERROR,
     CODE_SUCCESS,
     CODE_TOKEN_EXPIRED
-  } = require('../utils/constant')
+  } = require("../utils/constant")
   
   class Result {
     constructor(data, msg = '操作成功', options) {
