@@ -1,28 +1,52 @@
 const express = require('express')
 const router = express.Router()
 const Result = require('../models/Result')
-const {login} = require('../services/user')
-const {md5} = require('../utils')
-const {PWD_SALT} = require('../utils/constant')
+const { login } = require('../services/user')
+const { md5 } = require('../utils')
+const { PWD_SALT ,PRIVATE_KEY,JWT_EXPIRED} = require('../utils/constant')
+const { body, validationResult } = require('express-validator')
+const { boom } = require('boom')
+const jwt = require('jsonwebtoken')
 
 
-router.post('/login', function (req, res) {
-     console.log(req.body)
+router.post(
+    '/login',
+    [
+        body('username').isString().withMessage('用户名必须为字符串'),
+        body('password').isString().withMessage('密码必须为数字')
 
-    let { username, password } = req.body
-    password = md5(`${password}${PWD_SALT}`)
-    console.log("加密后密码："+password)
-    login({username, password}).then(user => {
-        if (!user || user.length === 0) {
-            new Result('登录失败 ').fail(res)
+    ],
+
+    function (req, res, next) {
+        console.log(req.body)
+        const err = validationResult(req)
+        console.log(err)
+        if (!err.isEmpty()) {
+            const [{ msg }] = err.errors
+            next(boom.badRequest(msg))
 
         } else {
-            new Result('登录成功').success(res)
+            
+            let { username, password } = req.body
+            password = md5(`${password}${PWD_SALT}`)
+            login({ username, password }).then(user => {
+                if (!user || user.length === 0) {
+                    new Result('登录失败 ').fail(res)
+                } else {  
+                    const token = jwt.sign (
+                        { username },
+                        PRIVATE_KEY,
+                        { expiresIn:JWT_EXPIRED}
+            )
+                    new Result({token}, '登录成功').success(res)
+                }
+
+            }
+            )
+
         }
-
     }
-
-)})
+    )
 router.get('/info', function (req, res, next) {
     res.json('user info...')
 })
