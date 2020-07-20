@@ -5,6 +5,10 @@ const {
     CODE_ERROR
 } = require('../utils/constant')
 const jwtAuth = require('./jwt')
+const Result = require('../models/Result')
+
+
+
 //注册路由
 const router = express.Router()
 //对后续请求进行身份验证
@@ -37,26 +41,23 @@ router.use((req,res,next) => {
 // })
 
 router.use((err, req, res, next) => {
-    if (err.name === 'UnauthorizedError') {
-      console.log(err)
-      res.json({
-        code: CODE_TOKEN_EXPIRED,
-        msg: 'token失效',
-        error: err.status,
-        errorMsg: err.name
-      })
-    } else {
-      const msg = (err && err.message) || '系统错误'
-      const statusCode = (err.output && err.output.statusCode) || 500;
-      const errorMsg = (err.output && err.output.payload && err.output.payload.error) || err.message
-      res.status(statusCode).json({
-        code: CODE_ERROR,
-        msg,
-        error: statusCode,
-        errorMsg
-      })
-    }
-  })
+  console.log(err)
+  if (err.name && err.name === 'UnauthorizedError') {
+    const { status = 401, message } = err
+    new Result(null, 'Token验证失败', {
+      error: status,
+      errMsg: message
+    }).jwtError(res.status(status))
+  } else {
+    const msg = (err && err.message) || '系统错误'
+    const statusCode = (err.output && err.output.statusCode) || 500;
+    const errorMsg = (err.output && err.output.payload && err.output.payload.error) || err.message
+    new Result(null, msg, {
+      error: statusCode,
+      errorMsg
+    }).fail(res.status(statusCode))
+  }
+})
 
 
 
