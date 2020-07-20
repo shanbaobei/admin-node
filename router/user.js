@@ -5,7 +5,8 @@ const { login } = require('../services/user')
 const { md5 } = require('../utils')
 const { PWD_SALT ,PRIVATE_KEY,JWT_EXPIRED} = require('../utils/constant')
 const { body, validationResult } = require('express-validator')
-const { boom } = require('boom')
+// const { boom } = require('boom')
+const boom = require('boom')
 const jwt = require('jsonwebtoken')
 
 
@@ -47,6 +48,7 @@ router.post(
         }
     }
     )
+
 router.get('/info', function (req, res, next) {
     res.json('user info...')
 })
