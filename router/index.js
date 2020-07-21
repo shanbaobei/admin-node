@@ -1,5 +1,6 @@
 const express = require('express')
 const boom = require('boom')
+const bookRouter = require('./book')
 const userRouter = require('./user')
 const jwtAuth = require('./jwt')
 const Result = require('../models/Result')
@@ -11,11 +12,12 @@ const router = express.Router()
 //对后续请求进行身份验证
 router.use(jwtAuth)
 
+
 router.get('/', function (req, res) {
     res.send('欢迎学习小慕读书')
 })
-router.use('/user',userRouter)//对user下的所有请求进行处理
-
+router.use('/user',userRouter)//对user下的所有请求都交给userRouter进行处理
+router.user('/book',bookRouter)
 // 集中处理404请求
 router.use((req,res,next) => {
     next(boom.notFound('接口不存在'))
