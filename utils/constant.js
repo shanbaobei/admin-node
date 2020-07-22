@@ -1,5 +1,5 @@
 const { env } = require('./env')
-const UPLOAD_PATH = env ==='dev' ? '/Users/sam/upload/admin-upload-ebook' :
+const UPLOAD_PATH = env ==='dev' ? 'D:/develop/file/admin-node' :
 '/root/upload/admin-upload/ebook'
 const debug = 'prod'
 module.exports = {
