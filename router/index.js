@@ -17,7 +17,8 @@ router.get('/', function (req, res) {
     res.send('欢迎学习小慕读书')
 })
 router.use('/user',userRouter)//对user下的所有请求都交给userRouter进行处理
-router.user('/book',bookRouter)
+// router.use('/book',bookRouter)
+router.use('/book', bookRouter)
 // 集中处理404请求
 router.use((req,res,next) => {
     next(boom.notFound('接口不存在'))

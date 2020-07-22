@@ -1,6 +1,7 @@
 const express = require('express')
-const multer = require('multer')
+const multer = require('multer')   //express的中间件，来开发文件上传功能
 const{ UPLOAD_PATH } = require('../utils/constant')
+const Result = require('../models/Result')
 
 const router = express.Router()
 
@@ -15,3 +16,4 @@ function(req,res,next){
     }
 
 })
+module.exports = router
