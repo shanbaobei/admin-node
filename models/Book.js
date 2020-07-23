@@ -66,7 +66,6 @@ class Book {
     parse() {
         return new Promise((resolve,reject) => {
             const bookPath = `${UPLOAD_PATH}${this.filePath}`
-            console.log("bookPath:"+bookPath)
             if(!fs.existsSync(bookPath)) {
                 //失败
                 reject(new Error('电子书不存在'))
@@ -75,13 +74,23 @@ class Book {
             epub.on('error',err => {
                 if(err) {
                     //失败
+                    console.log("解析失败了")
                     reject(err)
                 } else {
                     console.log(epub.metadata)
+                    resolve()  //成功
                 }
             })
-            //成功
-            resolve()
+            epub.on("end",err=>{
+                //这里打印书记描述信息
+                console.log(epub.metadata)
+                console.log("结束")
+                resolve()
+            });
+            //解析
+                epub.parse()
+           
+            
         })
     }
 }
