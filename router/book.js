@@ -2,6 +2,8 @@ const express = require('express')
 const multer = require('multer')   //express的中间件，来开发文件上传功能
 const { UPLOAD_PATH } = require('../utils/constant')
 const Result = require('../models/Result')
+const Book = require('../models/Book')
+const boom = require('boom')
 
 const router = express.Router()
 
@@ -10,9 +12,17 @@ router.post(
     multer({ dest: `${UPLOAD_PATH}/book` }).single('file'),
     function (req, res, next) {
         if (!req.file || req.file.length == 0) {
-            new Result('上传电子书失败').fail(res)
+            new Reclssult('上传电子书失败').fail(res)
         } else {
-            new Result('上传电子书成功').success(res)
+            const book = new Book(req.file)
+            book.parse ()
+            .then(book => {
+                new Result(book,'上传电子书成功').success(res)
+            })
+            .catch(err => {
+                next(boom.badImplementation(err))
+            })
+            
         }
 
     })
