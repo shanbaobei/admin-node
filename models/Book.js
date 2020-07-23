@@ -64,19 +64,23 @@ class Book {
 
     }
     parse() {
-        return new ((resolve,reject) => {
+        return new Promise((resolve,reject) => {
             const bookPath = `${UPLOAD_PATH}${this.filePath}`
+            console.log("bookPath:"+bookPath)
             if(!fs.existsSync(bookPath)) {
+                //失败
                 reject(new Error('电子书不存在'))
             }
-            const epub = new epub(bookPath)
+            const epub = new Epub(bookPath)
             epub.on('error',err => {
                 if(err) {
+                    //失败
                     reject(err)
                 } else {
                     console.log(epub.metadata)
                 }
             })
+            //成功
             resolve()
         })
     }

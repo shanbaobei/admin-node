@@ -14,14 +14,16 @@ router.post(
         if (!req.file || req.file.length == 0) {
             new Reclssult('上传电子书失败').fail(res)
         } else {
+            
             const book = new Book(req.file)
-            book.parse ()
+            
+            book.parse()
             .then(book => {
                 new Result(book,'上传电子书成功').success(res)
             })
             .catch(err => {
                 next(boom.badImplementation(err))
-            })
+            })           
             
         }
 
