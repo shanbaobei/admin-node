@@ -5,7 +5,8 @@ const {
 } = require('../utils/constant')
 const fs = require('fs')
 const Epub = require('../utils/epub')
-const xml2js = require('xml2js').parseString
+
+// const xml2js = require('xml2js').parseString
 
 class Book {
     constructor(file, data) {
@@ -71,27 +72,85 @@ class Book {
                 reject(new Error('电子书不存在'))
             }
             const epub = new Epub(bookPath)
-            epub.on('error',err => {
-                if(err) {
-                    //失败
-                    console.log("解析失败了")
-                    reject(err)
-                } else {
-                    console.log(epub.metadata)
-                    resolve()  //成功
-                }
+            epub.on('error', err => {
+                reject(err)
+              })
+              epub.on("end",err=>{
+                  if (err) {
+                      reject(err)
+                  }else {
+                         //这里打印书记描述信息
+                    // console.log(epub.metadata)
+                    console.log('epub end',epub)
+                    // 获取上传电子书的参数
+                    const {
+                        language,
+                        creator,
+                        creatorFileAs,
+                        title,
+                        cover,
+                        publisher
+
+                    } = epub.metadata
+                    if (!title) {
+                        reject(new Error('图书标题为空'))
+                    } else {
+                        this.title = title
+                        this.language = language || 'en'
+                        this.author = creator || creatorFileAs || 'unknown'
+                        this.publisher = publisher || 'unkonwn'
+                        this.footFile =epub.footFile
+                        const handleGetImage = (err, file, mimeType) => {
+                            // const handleGetImage =  (err, file, mimeType) => {
+                                //  console.log (err,file,mimeType)
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    const suffix = mimeType.split('/')[1]
+                                    const coverPath = `${UPLOAD_PATH}/img/${this.fileName}.${suffix}`
+                                    const coverUrl = `${UPLOAD_URL}/img/${this.fileName}.${suffix}`
+                                   fs.writeFileSync(coverPath,file,'binary')
+                                    this.coverPath = `/img/${this.fileName}.${suffix}`
+                                   this.cover = coverUrl
+                                    resolve(this)
+                                }
+                                }
+                        try  {
+                            this.unzip ()
+                            this.parseContents(epub)
+                            
+                                console.log('cover',cover)
+                                epub.getImage(cover,handleGetImage)
+                        } catch (e) {
+                            reject(e)
+                        }                        
+                        epub.getImage(cover,handleGetImage)
+                        // resolve(this)
+                    }                   
+                  }                          
             })
-            epub.on("end",err=>{
-                //这里打印书记描述信息
-                console.log(epub.metadata)
-                console.log("结束")
-                resolve()
-            });
-            //解析
-                epub.parse()
-           
-            
+            //解析过程
+                epub.parse()            
         })
     }
+    unzip(){
+        const AdmZip = require('adm-zip')
+        const zip =new AdmZip(Book.genPath(this.path))
+        zip.extractAllTo(Book.genPath(this.unzipPath), true)
+    }
+    parseContents(epub){
+        function getNcxFilePath() {
+            const spine = epub && epub.spine
+            console.log('spine',spine)
+        }
+
+    }    
+    static genPath(path) {
+        if (!path.startsWith('/')) {
+          path = `/${path}`
+        }
+        return `${UPLOAD_PATH}${path}`
+      }
 }
+
 module.exports = Book
