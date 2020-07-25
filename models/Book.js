@@ -6,7 +6,7 @@ const {
 const fs = require('fs')
 const Epub = require('../utils/epub')
 
-// const xml2js = require('xml2js').parseString
+const xml2js = require('xml2js').parseString
 
 class Book {
     constructor(file, data) {
@@ -17,7 +17,7 @@ class Book {
         }
     }
     createBookFromFile(file) {
-        console.log('createBookFromFile', file)
+        // console.log('createBookFromFile', file)
 
         const {
             destination,
@@ -138,11 +138,73 @@ class Book {
         const zip =new AdmZip(Book.genPath(this.path))
         zip.extractAllTo(Book.genPath(this.unzipPath), true)
     }
-    parseContents(epub){
-        function getNcxFilePath() {
+    parseContents(epub){   //电子书目录解析
+        function getNcxFilePath() {  //获取ncx文件
             const spine = epub && epub.spine
             console.log('spine',spine)
+            const ncx = spine.toc && spine.toc.href
+            const id = spine.toc && spine.toc.id
+            if (ncx) {
+                return ncx
+            } else {
+                return manifest[id].href
+            }  
+          
         }
+        function findParent(array) {
+            return array.map (item => {
+                return item
+            })
+        }
+        function flatten(array) {
+            return [].concat(...array.map(item => {
+                return item
+            }))
+        }
+        const ncxFilePath = Book.genPath(`${this.unzipPath}/${getNcxFilePath()}`)
+        if (fs.existsSync(ncxFilePath)){
+            return new Promise ((resolve,reject) => {
+                const xml = fs.readFileSync(ncxFilePath,'utf-8')
+                const fileName = this.fileName
+                xml2js(xml,{
+                    explicitArray:false,
+                    ignoreAttrs:false
+
+                },function(err,json){
+                    if (err) {
+                        reject(err)
+                    } else {
+                        console.log ('xml',json)
+                        const navMap = json.ncx.navMap
+                        console.log('xml',JSON.stringify(navMap))
+                        if (navMap.navPoint && navMap.navPoint.length >0 ) {
+                            navMap.navPoint = findParent(navMap.navPoint)                   
+                            const newNavMap = flatten(navMap.navPoint)
+                            // console.log(newNavMap === navMap.navPoint)
+                            const chapters = []
+                            // console.log(epub.flow)
+                            epub.flow.forEach((chapter,index) => {
+                                if (index+1 > newNavMap.length) {
+                                    return
+                                }
+                                const nav = newNavMap[index]
+                                chapter.text = `${UPLOAD_URL}/unzip/${fileName}/${chapter
+                                .href}`
+                                console.log(chapter.text)
+                                // console.log("打印电子书:"+chapter.text)
+                            })
+                        } else {
+                            reject (new Error('目录解析失败，目录数为0'))
+
+                        }
+                    }
+                })
+            })
+
+        } else {
+            throw new Error('文件目录不存在')
+        }
+        getNcxFilePath()
 
     }    
     static genPath(path) {
