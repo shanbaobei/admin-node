@@ -81,7 +81,7 @@ class Book {
                   }else {
                          //这里打印书记描述信息
                     // console.log(epub.metadata)
-                    console.log('epub end',epub)
+                    // console.log('epub end',epub)
                     // 获取上传电子书的参数
                     const {
                         language,
@@ -119,7 +119,7 @@ class Book {
                             this.unzip ()
                             this.parseContents(epub)
                             
-                                console.log('cover',cover)
+                                // console.log('cover',cover)
                                 epub.getImage(cover,handleGetImage)
                         } catch (e) {
                             reject(e)
@@ -141,7 +141,7 @@ class Book {
     parseContents(epub){   //电子书目录解析
         function getNcxFilePath() {  //获取ncx文件
             const spine = epub && epub.spine
-            console.log('spine',spine)
+            // console.log('spine',spine)
             const ncx = spine.toc && spine.toc.href
             const id = spine.toc && spine.toc.id
             if (ncx) {
@@ -151,13 +151,27 @@ class Book {
             }  
           
         }
-        function findParent(array) {
+        function findParent(array, level = 0,pid = '') {
             return array.map (item => {
+                item.level = level
+                item.pid = pid
+                if (item.navPoint && item.navPoint.length > 0) {
+                    item.navPoint = findParent(item.navPoint,level + 1,
+                        item['$'].id)
+                } else if (item.navPoint) {
+                    item.navPoint.level = level + 1
+                    item.navPoint.pid = item['$'].id               
+                 }
                 return item
             })
         }
         function flatten(array) {
             return [].concat(...array.map(item => {
+                if (item.navPoint && item.navPoint.length >0) {
+                    return [].concat(item, ...flatten(item.navPoint))
+                } else if (item.navPoint) {
+                    return [].concat(item, item.navPoint)
+                }
                 return item
             }))
         }
@@ -170,35 +184,52 @@ class Book {
                     explicitArray:false,
                     ignoreAttrs:false
 
-                },function(err,json){
-                    if (err) {
-                        reject(err)
+                },function(err, json) {
+                    if (!err) {
+                      const navMap = json.ncx.navMap // 获取ncx的navMap属性
+                      if (navMap.navPoint) { // 如果navMap属性存在navPoint属性，则说明目录存在
+                        navMap.navPoint = findParent(navMap.navPoint)
+                        const newNavMap = flatten(navMap.navPoint) // 将目录拆分为扁平结构
+                        const chapters = []
+                        epub.flow.forEach((chapter, index) => { // 遍历epub解析出来的目录
+                          // 如果目录大于从ncx解析出来的数量，则直接跳过
+                          if (index + 1 > newNavMap.length) {
+                            return
+                          }
+                          const nav = newNavMap[index] // 根据index找到对应的navMap
+                          chapter.text = `${UPLOAD_URL}/unzip/${fileName}/${chapter.href}` // 生成章节的URL
+                        //   console.log(`${JSON.stringify(navMap)}`)
+                          console.log(navMap)
+                          if (nav && nav.navLabel) { // 从ncx文件中解析出目录的标题
+                            chapter.label = nav.navLabel.text || ''
+                          } else {
+                            chapter.label = ''
+                          }
+                          chapter.level = nav.level
+                          chapter.pid = nav.pid
+                          chapter.navId = nav['$'].id
+                          chapter.fileName = fileName
+                          chapter.order = index + 1
+                          chapters.push(chapter)
+                        })
+                        const chapterTree = []
+                        chapters.forEach(c => {
+                          c.children = []
+                          if (c.pid === '') {
+                            chapterTree.push(c)
+                          } else {
+                            const parent = chapters.find(_ => _.navId === c.pid)
+                            parent.children.push(c)
+                          }
+                        }) // 将目录转化为树状结构
+                        resolve({ chapters, chapterTree })
+                      } else {
+                        reject(new Error('目录解析失败，navMap.navPoint error'))
+                      }
                     } else {
-                        console.log ('xml',json)
-                        const navMap = json.ncx.navMap
-                        console.log('xml',JSON.stringify(navMap))
-                        if (navMap.navPoint && navMap.navPoint.length >0 ) {
-                            navMap.navPoint = findParent(navMap.navPoint)                   
-                            const newNavMap = flatten(navMap.navPoint)
-                            // console.log(newNavMap === navMap.navPoint)
-                            const chapters = []
-                            // console.log(epub.flow)
-                            epub.flow.forEach((chapter,index) => {
-                                if (index+1 > newNavMap.length) {
-                                    return
-                                }
-                                const nav = newNavMap[index]
-                                chapter.text = `${UPLOAD_URL}/unzip/${fileName}/${chapter
-                                .href}`
-                                console.log(chapter.text)
-                                // console.log("打印电子书:"+chapter.text)
-                            })
-                        } else {
-                            reject (new Error('目录解析失败，目录数为0'))
-
-                        }
+                      reject(err)
                     }
-                })
+                  })
             })
 
         } else {
