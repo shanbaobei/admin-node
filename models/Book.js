@@ -59,7 +59,7 @@ class Book {
         this.categoryText = '' // 分类名称
         this.language = '' // 语种
         this.unzipUrl = unzipUrl // 解压后文件夹链接
-        this.originalname = originalname // 电子书文件的原名
+        this.originalName = originalname // 电子书文件的原名
     }
     createBookFromData(data) {
 
@@ -99,7 +99,7 @@ class Book {
                         this.language = language || 'en'
                         this.author = creator || creatorFileAs || 'unknown'
                         this.publisher = publisher || 'unkonwn'
-                        this.footFile =epub.footFile
+                        this.rootFile =epub.rootFile
                         const handleGetImage = (err, file, mimeType) => {
                             // const handleGetImage =  (err, file, mimeType) => {
                                 //  console.log (err,file,mimeType)
@@ -118,13 +118,19 @@ class Book {
                         try  {
                             this.unzip ()
                             this.parseContents(epub)
-                            
+                            .then(({ chapters, chapterTree}) => {
+                                this.contents = chapters
+                                this.contentsTree = chapterTree
+                                epub.getImage(cover,handleGetImage) //获取封面图片
+                            })
+                            .catch(err => reject(err)) // 解析目录
                                 // console.log('cover',cover)
-                                epub.getImage(cover,handleGetImage)
+                                
                         } catch (e) {
+
                             reject(e)
                         }                        
-                        epub.getImage(cover,handleGetImage)
+                       
                         // resolve(this)
                     }                   
                   }                          
@@ -199,7 +205,7 @@ class Book {
                           const nav = newNavMap[index] // 根据index找到对应的navMap
                           chapter.text = `${UPLOAD_URL}/unzip/${fileName}/${chapter.href}` // 生成章节的URL
                         //   console.log(`${JSON.stringify(navMap)}`)
-                          console.log(navMap)
+                        //   console.log(navMap)
                           if (nav && nav.navLabel) { // 从ncx文件中解析出目录的标题
                             chapter.label = nav.navLabel.text || ''
                           } else {
@@ -222,9 +228,10 @@ class Book {
                             parent.children.push(c)
                           }
                         }) // 将目录转化为树状结构
+                        console.log(chapterTree)
                         resolve({ chapters, chapterTree })
                       } else {
-                        reject(new Error('目录解析失败，navMap.navPoint error'))
+                        reject(new Error('目录解析失败，目录树为0'))
                       }
                     } else {
                       reject(err)
