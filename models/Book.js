@@ -5,7 +5,7 @@ const {
 } = require('../utils/constant')
 const fs = require('fs')
 const Epub = require('../utils/epub')
-
+const path = require('path')
 const xml2js = require('xml2js').parseString
 
 class Book {
@@ -181,10 +181,13 @@ class Book {
                 return item
             }))
         }
-        const ncxFilePath = Book.genPath(`${this.unzipPath}/${getNcxFilePath()}`)
+        const ncxFilePath = Book.genPath(`${this.
+            unzipPath}/${getNcxFilePath()}`)
         if (fs.existsSync(ncxFilePath)){
             return new Promise ((resolve,reject) => {
                 const xml = fs.readFileSync(ncxFilePath,'utf-8')
+                const dir = path.dirname(ncxFilePath).replace(UPLOAD_PATH,'')
+                console.log('dir',dir)
                 const fileName = this.fileName
                 xml2js(xml,{
                     explicitArray:false,
@@ -197,23 +200,13 @@ class Book {
                         navMap.navPoint = findParent(navMap.navPoint)
                         const newNavMap = flatten(navMap.navPoint) // 将目录拆分为扁平结构
                         const chapters = []
-                        epub.flow.forEach((chapter, index) => { // 遍历epub解析出来的目录
-                          // 如果目录大于从ncx解析出来的数量，则直接跳过
-                          if (index + 1 > newNavMap.length) {
-                            return
-                          }
-                          const nav = newNavMap[index] // 根据index找到对应的navMap
-                          chapter.text = `${UPLOAD_URL}/unzip/${fileName}/${chapter.href}` // 生成章节的URL
-                        //   console.log(`${JSON.stringify(navMap)}`)
-                        //   console.log(navMap)
-                          if (nav && nav.navLabel) { // 从ncx文件中解析出目录的标题
-                            chapter.label = nav.navLabel.text || ''
-                          } else {
-                            chapter.label = ''
-                          }
-                          chapter.level = nav.level
-                          chapter.pid = nav.pid
-                          chapter.navId = nav['$'].id
+                        
+                        newNavMap.forEach((chapter, index) => { // 遍历epub解析出来的目录
+                          
+                          const src = chapter.content['$'].src                       
+                          chapter.text = `${UPLOAD_URL}${dir}/${src}` // 生成章节的URL
+                            chapter.label = chapter.navLabel.text || ''
+                          chapter.navId = chapter['$'].id
                           chapter.fileName = fileName
                           chapter.order = index + 1
                           chapters.push(chapter)
