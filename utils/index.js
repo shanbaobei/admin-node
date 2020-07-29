@@ -16,8 +16,10 @@ function decoded(req) {
 
   // console.log(token)
 }
+
 module.exports = {
-  md5,
-  decoded
+  decoded,
+  md5
+ 
   
 }

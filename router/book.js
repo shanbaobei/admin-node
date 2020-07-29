@@ -4,6 +4,8 @@ const { UPLOAD_PATH } = require('../utils/constant')
 const Result = require('../models/Result')
 const Book = require('../models/Book')
 const boom = require('boom')
+const { decoded } = require('../utils')
+const bookService = require('../services/book')
 
 const router = express.Router()
 
@@ -29,4 +31,29 @@ router.post(
         }
 
     })
+router.post(
+    '/create',
+    function(req,res,next) {
+        const decode = decoded(req)
+        // console.log(decode)
+        // console.log(req.body)
+        // const book = new Book(reIdentifier 'book' has already been declaredq.body)
+        if (decode && decode.username) {
+            req.body.username = decode.username
+        }
+        const book = new Book(null,req.body)
+    // const book = {}
+        console.log(book)
+        bookService.insertBook(book)  //使用insertBook将 book传入
+        .then(() => {
+
+        }).catch(err => {
+            next(boom.badImplementation(err))
+        })
+    }
+)
+
+
+
+
 module.exports = router
