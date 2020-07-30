@@ -46,7 +46,7 @@ router.post(
         console.log(book)
         bookService.insertBook(book)  //使用insertBook将 book传入
         .then(() => {
-
+            new Result ('电子书添加成功').success(res)
         }).catch(err => {
             next(boom.badImplementation(err))
         })
