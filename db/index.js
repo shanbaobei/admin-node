@@ -55,15 +55,23 @@ function insert(model,tableName){
     } else {
       const keys = []
       const values = []
+      var i=0;
       Object.keys(model).forEach(key => {
         if (model.hasOwnProperty(key)) {  //判断model上的key是自身的key还是原型链上的key
-          keys.push(`\`${keys}\``)
+          keys.push(`\`${key}\``)
+         
           values.push(`'${model[key]}'`)
+          
+          
         }
+        
       })
+
+
       if (keys.length > 0 && values.length > 0) {
         let sql = `INSERT INTO \`${tableName}\` (`
         const keysString = keys.join(',')
+        console.log("key是："+keysString)
         const valuesString = values.join(',')
         sql = `${sql}${keysString}) VALUES (${valuesString})`
         console.log(sql)

@@ -76,9 +76,9 @@ class Book {
         this.unzipPath = data.unzipPath
         this.coverPath = data.coverPath
         this.createUser = data.username
+        this.createDt = new Date().getTime()
         this.updateDt = new Date().getTime()
-        this.updateDt = new Date().getTime()
-        this.updatetype = data.updatetype === 0 ? data.updatetype : 1
+        this.updateType = data.updateType === 0 ? data.updateType : 1
         this.category = data.category || 99
         this.categoryText = data.categoryText || '自定义'
 
@@ -275,7 +275,8 @@ class Book {
         createDt: this.createDt,
         updateDt: this.updateDt,
          category: this.category ,
-        categoryText: this.categoryText 
+        categoryText: this.categoryText ,
+        updateType:this.updateType
            
        
         }
