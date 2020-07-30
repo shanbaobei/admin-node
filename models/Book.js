@@ -256,7 +256,30 @@ class Book {
         }
         getNcxFilePath()
 
-    }    
+    }   
+    toDb() {
+        return {
+        fileName:this.fileName,
+        cover:this.coverPath,
+        title:this.title,
+        author:this.author,
+        publisher:this.publisher,
+        bookId:this.fileName,
+        language:this.language,
+        rootFile:this.rootFile,
+        originalName:this.originalName,
+        filePath:this.filePath,
+        unzipPath:this.unzipPath,
+        coverPath:this.coverPath,
+        createUser:this.createUser,
+        createDt: this.createDt,
+        updateDt: this.updateDt,
+         category: this.category ,
+        categoryText: this.categoryText 
+           
+       
+        }
+    } 
     static genPath(path) {
         if (!path.startsWith('/')) {
           path = `/${path}`

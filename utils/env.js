@@ -1,5 +1,6 @@
 const env = 'dev'
-
+const debug = false
 module.exports = {
-    env
+    env,
+    debug
 }
