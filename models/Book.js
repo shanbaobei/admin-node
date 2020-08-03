@@ -59,6 +59,7 @@ class Book {
         this.categoryText = '' // 分类名称
         this.language = '' // 语种
         this.unzipUrl = unzipUrl // 解压后文件夹链接
+        this.unzipPath = `/unzip/${filename}` // 解压后的电子书目录
         this.originalName = originalname // 电子书文件的原名
     }
     createBookFromData(data) {
@@ -81,6 +82,7 @@ class Book {
         this.updateType = data.updateType === 0 ? data.updateType : 1
         this.category = data.category || 99
         this.categoryText = data.categoryText || '自定义'
+        this.contents = data.contents || []
 
     }
     parse() {
@@ -206,8 +208,9 @@ class Book {
             return new Promise ((resolve,reject) => {
                 const xml = fs.readFileSync(ncxFilePath,'utf-8')
                 const dir = path.dirname(ncxFilePath).replace(UPLOAD_PATH,'')
-                console.log('dir',dir)
+                // console.log('dir',dir)
                 const fileName = this.fileName
+                const unzipPath = this.unzipPath
                 xml2js(xml,{
                     explicitArray:false,
                     ignoreAttrs:false
@@ -222,7 +225,10 @@ class Book {
                         
                         newNavMap.forEach((chapter, index) => { // 遍历epub解析出来的目录
                           
-                          const src = chapter.content['$'].src                       
+                          const src = chapter.content['$'].src  
+                          chapter.id = `${src}`
+                          chapter.href = `${dir}/${src}`.replace(unzipPath, '')     
+                        // chapter.href = `${dir}/${src}`               
                           chapter.text = `${UPLOAD_URL}${dir}/${src}` // 生成章节的URL
                             chapter.label = chapter.navLabel.text || ''
                           chapter.navId = chapter['$'].id
@@ -281,6 +287,9 @@ class Book {
        
         }
     } 
+    getContents() {
+        return this.contents
+    }
     static genPath(path) {
         if (!path.startsWith('/')) {
           path = `/${path}`
