@@ -290,11 +290,33 @@ class Book {
     getContents() {
         return this.contents
     }
+    reset() {
+        console.log(this.fileName)
+        if (Book.pathExists(this.filePath)) {
+            // console.log('删除文件...')
+            fs.unlinkSync(Book.genPath(this.filePath))
+        }
+        if (Book.pathExists(this.coverPath)) {
+            // console.log('删除封面...')
+            fs.unlinkSync(Book.genPath(this.coverPath))
+        }
+        if (Book.pathExists(this.unzipPath)){
+            // console.log('删除解压目录...')
+            fs.rmdirSync(Book.genPath(this.unzipPath),{recursive:true})//recursive表示迭代删除
+        }
+    }
     static genPath(path) {
         if (!path.startsWith('/')) {
           path = `/${path}`
         }
         return `${UPLOAD_PATH}${path}`
+      }
+      static pathExists(path) {
+          if (path.startsWith(UPLOAD_PATH)) {
+              return fs.existsSync(path)
+          } else {
+              return fs.existsSync(Book.genPath(path))
+          }
       }
 }
 

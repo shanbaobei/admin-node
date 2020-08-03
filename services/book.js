@@ -3,9 +3,24 @@ const db = require('../db')
 const _ = require('lodash')  //通过该插件可以方便的提取contents中的冗余字段
 
 function exists(book) {
-    return false
+    const {title,author,publisher} = book
+    const sql = `select * from book where title = '${title}' and
+    author = '${author}' and publisher = '${publisher}'`
+    return db.queryOne(sql)
 }
-function removeBook(book) {}
+async function removeBook(book) {
+    if(book) {
+        book.reset()
+        if (book.fileName) {
+            const removeBookSql = `delete from book where fileName ='${book.fi}'`
+            const removeContentsSql = `delete from contents where fileName ='
+            ${book.fileName}'`
+            await db.querySql(removeBookSql)
+            await db.querySql(removeContentsSql)
+
+        }
+    }
+}
 async function insertContents(book){
     const contents = book.getContents()
     // console.log('contents是'  ,contents)
