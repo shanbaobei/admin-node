@@ -292,17 +292,50 @@ class Book {
     }
     reset() {
         console.log(this.fileName)
+        // console.log("删除文件路径:"+this.filePath);
         if (Book.pathExists(this.filePath)) {
-            // console.log('删除文件...')
+            console.log('删除文件...'+this.filePath)
             fs.unlinkSync(Book.genPath(this.filePath))
         }
         if (Book.pathExists(this.coverPath)) {
-            // console.log('删除封面...')
+            // console.log('删除封面...'+this.coverPath)
             fs.unlinkSync(Book.genPath(this.coverPath))
         }
         if (Book.pathExists(this.unzipPath)){
-            // console.log('删除解压目录...')
-            fs.rmdirSync(Book.genPath(this.unzipPath),{recursive:true})//recursive表示迭代删除
+            // console.log('删除解压目录...'+this.unzipPath)
+            // fs.rmdirSync(Book.genPath(this.unzipPath),{recursive:false})//recursive表示迭代删除
+            Book.deleteFolderRecursive(Book.genPath(this.unzipPath));
+        }
+    }
+    static deleteFolderRecursive (url){
+        var files = [];
+        /**
+         * 判断给定的路径是否存在
+         */
+        if (fs.existsSync(url)) {
+            /**
+             * 返回文件和子目录的数组
+             */
+            files = fs.readdirSync(url);
+            files.forEach(function (file, index) {
+
+                var curPath = path.join(url, file);
+                /**
+                 * fs.statSync同步读取文件夹文件，如果是文件夹，在重复触发函数
+                 */
+                if (fs.statSync(curPath).isDirectory()) { // recurse
+                    Book.deleteFolderRecursive(curPath);
+
+                } else {
+                    fs.unlinkSync(curPath);
+                }
+            });
+            /**
+             * 清除文件夹
+             */
+            fs.rmdirSync(url);
+        } else {
+            console.log("给定的路径不存在，请给出正确的路径");
         }
     }
     static genPath(path) {

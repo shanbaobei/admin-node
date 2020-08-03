@@ -11,14 +11,14 @@ function exists(book) {
 async function removeBook(book) {
     if(book) {
         book.reset()
-        if (book.fileName) {
-            const removeBookSql = `delete from book where fileName ='${book.fi}'`
-            const removeContentsSql = `delete from contents where fileName ='
-            ${book.fileName}'`
-            await db.querySql(removeBookSql)
-            await db.querySql(removeContentsSql)
+        // if (book.fileName) {
+        //     const removeBookSql = `delete from book where fileName ='${book.fi}'`
+        //     const removeContentsSql = `delete from contents where fileName ='
+        //     ${book.fileName}'`
+        //     await db.querySql(removeBookSql)
+        //     await db.querySql(removeContentsSql)
 
-        }
+        // }
     }
 }
 async function insertContents(book){

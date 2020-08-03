@@ -42,6 +42,7 @@ router.post(
             req.body.username = decode.username
         }
         const book = new Book(null,req.body)
+        
     // const book = {}
         console.log(book)
         bookService.insertBook(book)  //使用insertBook将 book传入
