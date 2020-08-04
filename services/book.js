@@ -11,14 +11,14 @@ function exists(book) {
 async function removeBook(book) {
     if(book) {
         book.reset()
-        // if (book.fileName) {
-        //     const removeBookSql = `delete from book where fileName ='${book.fi}'`
-        //     const removeContentsSql = `delete from contents where fileName ='
-        //     ${book.fileName}'`
-        //     await db.querySql(removeBookSql)
-        //     await db.querySql(removeContentsSql)
+        if (book.fileName) {  //为了避免在数据库中存在数据，也需要在数据库中删除
+            const removeBookSql = `delete from book where fileName ='${book.fi}'`
+            const removeContentsSql = `delete from contents where fileName ='
+            ${book.fileName}'`
+            await db.querySql(removeBookSql)
+            await db.querySql(removeContentsSql)
 
-        // }
+        }
     }
 }
 async function insertContents(book){
@@ -67,7 +67,23 @@ function insertBook(book) {
     })
 
 }
-
+function getBook(fileName) {
+    return new Promise(async(resolve,reject) => {
+        const bookSql = `select * from book where fileName='${fileName}'`
+        const contentsSql = `select * from contents where fileName='${fileName}'
+        order by \`order\``
+        // const contentsSql = `select * from contents where fileName='${fileName}'`
+        const book = await db.queryOne(bookSql)
+        const contents = await db.querySql(contentsSql)
+        if (book) {
+            book.cover = Book.genCoverUrl(book)
+            book.contentsTree = Book.genContentsTree(contents)
+            
+        }
+        resolve(book)
+    })
+}
 module.exports = {
-    insertBook
+    insertBook,
+    getBook
 }

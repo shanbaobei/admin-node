@@ -1,7 +1,8 @@
 const {
     MIME_TYPE_EPUB,
     UPLOAD_URL,
-    UPLOAD_PATH
+    UPLOAD_PATH,
+    OLD_UPLOAD_URL
 } = require('../utils/constant')
 const fs = require('fs')
 const Epub = require('../utils/epub')
@@ -351,6 +352,56 @@ class Book {
               return fs.existsSync(Book.genPath(path))
           }
       }
+      static genCoverUrl(book) {  //编辑封面解析
+        console.log('genCoverUrl', book)
+          const {cover} = book
+          if (cover) {
+              if (cover.startsWith('/')) {
+                  return `${UPLOAD_URL}${cover}`
+              } else {
+                return `${UPLOAD_URL}/${cover}`
+          }
+          } else {
+              return null
+          }
+      }
+      static genContentsTree(book) {
+         const { contents } = book
+         if (contents) {
+             const contentsTree = []
+             contents.forEach(c => {
+                 c.children = []
+                 if (c.pid === '') {
+                     contentsTree.push(c)
+                 } else {
+                    const parent = chapters.find(_ => _.navId === c.pid)
+                    parent.children.push(c)
+                 }
+             })
+             return contentsTree
+             console.log('contentsTree是' ,contentsTree)
+         }
+          
+         
+         
+      }
+    // static genContentsTree(book) {   //获取编辑目录
+    //     const {contents} = book
+    //     if (contents) {
+    //         const contentsTree = []
+    //         contents.forEach(c => {
+    //             c.children = []
+    //             if (c.pid === '') {
+    //                 contentsTree.push(c)
+    //             }else {
+    //                 const parent = contents.find(_ => _.navId === c.pid)
+    //                 parent.children.push(c)
+    //             }
+    //         })
+    //         return contentsTree
+    //     }
+    // }
+ 
 }
 
 module.exports = Book
