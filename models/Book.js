@@ -366,7 +366,8 @@ class Book {
           }
       }
       static genContentsTree(book) {
-         const { contents } = book
+
+         const  contents  = book
          if (contents) {
              const contentsTree = []
              contents.forEach(c => {
@@ -374,12 +375,12 @@ class Book {
                  if (c.pid === '') {
                      contentsTree.push(c)
                  } else {
-                    const parent = chapters.find(_ => _.navId === c.pid)
+                    const parent = contentsTree.find(_ => _.navId === c.pid)
                     parent.children.push(c)
                  }
              })
              return contentsTree
-             console.log('contentsTree是' ,contentsTree)
+            //  console.log('contentsTree是' ,contentsTree)
          }
           
          

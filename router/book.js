@@ -35,16 +35,13 @@ router.post(
     '/create',
     function(req,res,next) {
         const decode = decoded(req)
-        // console.log(decode)
-        // console.log(req.body)
-        // const book = new Book(reIdentifier 'book' has already been declaredq.body)
         if (decode && decode.username) {
             req.body.username = decode.username
         }
         const book = new Book(null,req.body)
         
     // const book = {}
-        console.log(book)
+        // console.log(book)
         bookService.insertBook(book)  //使用insertBook将 book传入
         .then(() => {
             new Result ('电子书添加成功').success(res)
@@ -53,7 +50,26 @@ router.post(
         })
     }
 )
-
+router.post(
+    '/update',
+    function(req,res,next) {
+        const decode = decoded(req)
+        
+        if (decode && decode.username) {
+            req.body.username = decode.username
+        }
+        const book = new Book(null,req.body)
+        
+    // const book = {}
+        // console.log(book)
+        bookService.updateBook(book)  //使用updateBook将 book传入
+        .then(() => {
+            new Result ('更新电子书添加成功').success(res)
+        }).catch(err => {
+            next(boom.badImplementation(err))
+        })
+    }
+)
 router.get('/get',function(req,res,next) {
     const { fileName } = req.query
     if (!fileName) {
