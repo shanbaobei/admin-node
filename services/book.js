@@ -112,8 +112,40 @@ function getBook(fileName) {
         
     })
 }
+async function getCategory(){
+    const sql = `select * from category order by category asc`
+    const result = await db.querySql(sql)
+    const categoryList = []
+    result.forEach(item => {
+        categoryList.push({
+            label:item.categoryText,
+            value:item.category,
+            num:item.num
+        })
+    })
+    return categoryList
+
+}
+async function listBook(query) {
+    console.log(query)
+    const {
+        category,
+        author,
+        title
+    } = query
+    let bookSql = 'select * from book'
+    let where = 'where'
+    if (where !== 'where') {
+        bookSql = `${bookSql} ${where}`
+    }
+    const list = await db.querySql(bookSql)
+    return { list }
+  
+}
 module.exports = {
     insertBook,
     getBook,
-    updateBook
+    updateBook,
+    getCategory,
+    listBook
 }

@@ -82,6 +82,20 @@ router.get('/get',function(req,res,next) {
         })
     }
 })
+router.get('/category',function(req,res,next) {
+    bookService.getCategory().then(category => {
+        new Result(category,'获取分类成功').success(res)
+    }).catch(err =>{
+        next(boom.badImplementation(err))
+    })
+})
+router.get('/list',function(req,res,next) {
+    bookService.listBook(req.query).then(({ list }) => {
+        new Result({ list },'获取图书l列表成功').success(res)
+    }).catch(err =>{
+        next(boom.badImplementation(err))
+    })
+})
 
 
 
