@@ -131,13 +131,20 @@ async function listBook(query) {
     const {
         category,
         author,
-        title
+        title,
+        page = 1,
+        pageSize = 20
     } = query
+    const offset = (page - 1) * pageSize
     let bookSql = 'select * from book'
     let where = 'where'
+    title && (where = db.andLike(where,'title',title))
+    author && (where = db.andLike(where,'author',author))
+    category && (where = db.and(where,'category',category))
     if (where !== 'where') {
         bookSql = `${bookSql} ${where}`
     }
+    bookSql = `${bookSql} limit ${pageSize} offset ${offset}`
     const list = await db.querySql(bookSql)
     return { list }
   
