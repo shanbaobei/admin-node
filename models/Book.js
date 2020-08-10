@@ -386,22 +386,7 @@ class Book {
          
          
       }
-    // static genContentsTree(book) {   //获取编辑目录
-    //     const {contents} = book
-    //     if (contents) {
-    //         const contentsTree = []
-    //         contents.forEach(c => {
-    //             c.children = []
-    //             if (c.pid === '') {
-    //                 contentsTree.push(c)
-    //             }else {
-    //                 const parent = contents.find(_ => _.navId === c.pid)
-    //                 parent.children.push(c)
-    //             }
-    //         })
-    //         return contentsTree
-    //     }
-    // }
+    
  
 }
 
